@@ -8,22 +8,26 @@ import appeng.bootstrap.components.IInitComponent;
 import appeng.bootstrap.components.IPostInitComponent;
 import appeng.bootstrap.components.IRecipeRegistrationComponent;
 import appeng.core.features.ItemDefinition;
-import co.neeve.nae2.NAE2;
+import co.neeve.nae2.Tags;
 import co.neeve.nae2.client.gui.PatternMultiToolButtonHandler;
 import co.neeve.nae2.common.features.Features;
 import co.neeve.nae2.common.features.subfeatures.VoidCellFeatures;
 import co.neeve.nae2.common.items.VirtualPattern;
 import co.neeve.nae2.common.items.WirelessTerminalUniversal;
 import co.neeve.nae2.common.items.cells.DenseFluidCell;
+import co.neeve.nae2.common.items.cells.DenseGasCell;
 import co.neeve.nae2.common.items.cells.DenseItemCell;
 import co.neeve.nae2.common.items.cells.handlers.VoidCellHandler;
 import co.neeve.nae2.common.items.cells.vc.VoidFluidCell;
+import co.neeve.nae2.common.items.cells.vc.VoidGasCell;
 import co.neeve.nae2.common.items.cells.vc.VoidItemCell;
 import co.neeve.nae2.common.items.patternmultitool.ToolPatternMultiTool;
-import co.neeve.nae2.common.recipes.handlers.VoidCellRecipe;
+import co.neeve.nae2.common.recipes.handlers.VoidConversionRecipe;
 import co.neeve.nae2.common.registration.registry.Registry;
 import co.neeve.nae2.common.registration.registry.interfaces.Definitions;
 import co.neeve.nae2.common.registration.registry.rendering.NoItemRendering;
+import com.mekeng.github.common.ItemAndBlocks;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
@@ -31,6 +35,8 @@ import net.minecraftforge.common.MinecraftForge;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class Items implements Definitions<IItemDefinition> {
@@ -40,6 +46,7 @@ public class Items implements Definitions<IItemDefinition> {
 
 	private final IItemDefinition storageCellVoid;
 	private final IItemDefinition fluidStorageCellVoid;
+	private final IItemDefinition gasStorageCellVoid;
 	private final IItemDefinition storageCell256K;
 	private final IItemDefinition storageCell1024K;
 	private final IItemDefinition storageCell4096K;
@@ -48,6 +55,10 @@ public class Items implements Definitions<IItemDefinition> {
 	private final IItemDefinition storageCellFluid1024K;
 	private final IItemDefinition storageCellFluid4096K;
 	private final IItemDefinition storageCellFluid16384K;
+	private final IItemDefinition storageCellGas256K;
+	private final IItemDefinition storageCellGas1024K;
+	private final IItemDefinition storageCellGas4096K;
+	private final IItemDefinition storageCellGas16384K;
 	private final IItemDefinition virtualPattern;
 	private final IItemDefinition universalWirelessTerminal;
 
@@ -65,36 +76,53 @@ public class Items implements Definitions<IItemDefinition> {
 				if (r.isClient()) {
 					MinecraftForge.EVENT_BUS.register(new PatternMultiToolButtonHandler());
 				}
-
-				// Void Cells.
-
 			})
 			.build());
 
-		this.storageCellVoid = this.registerById(registry.item("storage_cell_void", VoidItemCell::new)
-			.features(Features.VOID_CELLS)
-			.build());
+		// Void Cells.
+		this.storageCellVoid = this.registerById(
+			registry.item("storage_cell_void", VoidItemCell::new)
+				.features(Features.VOID_CELLS)
+				.build());
 
 		this.fluidStorageCellVoid = this.registerById(
 			registry.item("fluid_storage_cell_void", VoidFluidCell::new)
 				.features(Features.VOID_CELLS)
 				.build());
 
+		this.gasStorageCellVoid = this.registerById(
+			registry.item("gas_storage_cell_void", VoidGasCell::new)
+				.features(Features.VOID_CELLS, Features.DENSE_GAS_CELLS)
+				.build());
+
+		var voidCells = new Object2ObjectArrayMap<String, IItemDefinition>();
+		if (this.storageCellVoid.isEnabled()) voidCells.put("item", this.storageCellVoid);
+		if (this.fluidStorageCellVoid.isEnabled()) voidCells.put("fluid", this.fluidStorageCellVoid);
+		if (this.gasStorageCellVoid.isEnabled()) voidCells.put("gas", this.gasStorageCellVoid);
+
 		registry.addBootstrapComponent((IPostInitComponent) r -> {
-			if (this.storageCellVoid.isEnabled() || this.fluidStorageCellVoid.isEnabled()) {
+			if (!voidCells.isEmpty()) {
 				AEApi.instance().registries().cell().addCellHandler(new VoidCellHandler());
 			}
 		});
 
-		registry.addBootstrapComponent((IRecipeRegistrationComponent) (side, r) -> NAE2.definitions().materials().cellPartVoid().maybeStack(
-			1).ifPresent(voidComponent ->
-			AEApi.instance().definitions().materials().emptyStorageCell().maybeStack(1).ifPresent(stack -> {
-				this.storageCellVoid.maybeStack(1).ifPresent((itemStack -> r.register(new VoidCellRecipe(
-					stack, voidComponent, itemStack).setRegistryName("storage_cell_void"))));
+		registry.addBootstrapComponent((IRecipeRegistrationComponent) (side, r) -> {
+			if (!VoidCellFeatures.CONVERSION_RECIPES.isEnabled()) return;
 
-				this.fluidStorageCellVoid.maybeStack(1).ifPresent((itemStack -> r.register(new VoidCellRecipe(
-					voidComponent, stack, itemStack).setRegistryName("fluid_storage_cell_void"))));
-			})));
+			// Register circular conversion.
+			if (voidCells.size() > 1) {
+				var entrySet = voidCells.entrySet().stream().collect(Collectors.toList());
+				for (var i = 0; i < entrySet.size(); i++) {
+					var from = entrySet.get(i);
+					var to = entrySet.get((i + 1) % voidCells.size());
+					from.getValue().maybeStack(1).ifPresent(fromStack ->
+						to.getValue().maybeStack(1).ifPresent(toStack ->
+							r.register(new VoidConversionRecipe(fromStack, toStack)
+								.setRegistryName(Tags.MODID, "void_conversion_" +
+									from.getKey() + "_to_" + to.getKey()))));
+				}
+			}
+		});
 
 		this.storageCell256K = this.registerById(registry.item("storage_cell_256k", () ->
 				new DenseItemCell(Materials.MaterialType.CELL_PART_256K,
@@ -198,15 +226,25 @@ public class Items implements Definitions<IItemDefinition> {
 					this.fluidStorageCellVoid
 				});
 			}
+
+			if (Features.DENSE_GAS_CELLS.isEnabled()) {
+				mirrorCellUpgrades(new ItemStack(ItemAndBlocks.GAS_CELL_1k), new IItemDefinition[]{
+					this.storageCellGas256K,
+					this.storageCellGas1024K,
+					this.storageCellGas4096K,
+					this.storageCellGas16384K,
+					this.storageCellVoid
+				});
+			}
 		});
 	}
 
-	private static void mirrorCellUpgrades(IItemDefinition cellDef, IItemDefinition[] cells) {
+	private static void mirrorCellUpgrades(Function<ItemStack, Boolean> predicate, IItemDefinition[] cells) {
 		var supported = new java.util.HashMap<Upgrades, Integer>();
 		Arrays.stream(Upgrades.values())
 			.forEach(upgrade ->
 				upgrade.getSupported().entrySet().stream()
-					.filter(x -> cellDef.isSameAs(x.getKey()))
+					.filter(x -> predicate.apply(x.getKey()))
 					.map(Map.Entry::getValue)
 					.findFirst()
 					.ifPresent(value -> supported.put(upgrade, value)));
@@ -214,6 +252,14 @@ public class Items implements Definitions<IItemDefinition> {
 		Arrays.stream(cells).forEach(iItemDefinition ->
 			supported.forEach((key, value) ->
 				key.registerItem(iItemDefinition, value)));
+	}
+
+	private static void mirrorCellUpgrades(IItemDefinition cellDef, IItemDefinition[] cells) {
+		mirrorCellUpgrades(cellDef::isSameAs, cells);
+	}
+
+	private static void mirrorCellUpgrades(ItemStack itemStack, IItemDefinition[] cells) {
+		mirrorCellUpgrades(itemStack::isItemEqual, cells);
 	}
 
 	private IItemDefinition registerById(ItemDefinition item) {
@@ -236,6 +282,10 @@ public class Items implements Definitions<IItemDefinition> {
 
 	public IItemDefinition fluidStorageCellVoid() {
 		return this.fluidStorageCellVoid;
+	}
+
+	public IItemDefinition gasStorageCellVoid() {
+		return this.gasStorageCellVoid;
 	}
 
 	public IItemDefinition virtualPattern() {

@@ -3,13 +3,18 @@ package co.neeve.nae2.common.registration.definitions;
 import appeng.api.AEApi;
 import appeng.api.config.Upgrades;
 import appeng.api.definitions.IItemDefinition;
+import appeng.api.features.IWirelessTermHandler;
+import appeng.bootstrap.components.IInitComponent;
 import appeng.bootstrap.components.IPostInitComponent;
 import appeng.bootstrap.components.IRecipeRegistrationComponent;
 import appeng.core.features.ItemDefinition;
 import co.neeve.nae2.NAE2;
 import co.neeve.nae2.client.gui.PatternMultiToolButtonHandler;
 import co.neeve.nae2.common.features.Features;
+import co.neeve.nae2.common.features.subfeatures.VoidCellFeatures;
+import co.neeve.nae2.common.items.OCUpgrade;
 import co.neeve.nae2.common.items.VirtualPattern;
+import co.neeve.nae2.common.items.WirelessTerminalUniversal;
 import co.neeve.nae2.common.items.cells.DenseFluidCell;
 import co.neeve.nae2.common.items.cells.DenseItemCell;
 import co.neeve.nae2.common.items.cells.handlers.VoidCellHandler;
@@ -45,6 +50,8 @@ public class Items implements Definitions<IItemDefinition> {
 	private final IItemDefinition storageCellFluid4096K;
 	private final IItemDefinition storageCellFluid16384K;
 	private final IItemDefinition virtualPattern;
+	private final IItemDefinition universalWirelessTerminal;
+	private final IItemDefinition openComputerUpgrade;
 
 	public Items(Registry registry) {
 		this.virtualPattern = this.registerById(registry.item("virtual_pattern", VirtualPattern::new)
@@ -138,6 +145,40 @@ public class Items implements Definitions<IItemDefinition> {
 					(int) Math.pow(2, 14)))
 			.features(Features.DENSE_FLUID_CELLS)
 			.build());
+
+		this.storageCellGas256K = this.registerById(registry.item("storage_cell_gas_256k", () -> new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_256K,
+					(int) Math.pow(2, 8)))
+			.features(Features.DENSE_GAS_CELLS)
+			.build());
+
+		this.storageCellGas1024K = this.registerById(registry.item("storage_cell_gas_1024k", () ->
+				new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_1024K,
+					(int) Math.pow(2, 10)))
+			.features(Features.DENSE_GAS_CELLS)
+			.build());
+
+		this.storageCellGas4096K = this.registerById(registry.item("storage_cell_gas_4096k", () ->
+				new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_4096K,
+					(int) Math.pow(2, 12)))
+			.features(Features.DENSE_GAS_CELLS)
+			.build());
+
+		this.storageCellGas16384K = this.registerById(registry.item("storage_cell_gas_16384k", () ->
+				new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_16384K,
+					(int) Math.pow(2, 14)))
+			.features(Features.DENSE_GAS_CELLS)
+			.build());
+
+		this.universalWirelessTerminal = this.registerById(registry.item("universal_wireless_terminal", WirelessTerminalUniversal::new)
+				.features(Features.UNIVERSAL_TERMINAL)
+				.bootstrap((item) -> (IInitComponent) r -> {
+					AEApi.instance().registries().wireless().registerWirelessHandler((IWirelessTermHandler) item);
+					Upgrades.MAGNET.registerItem(new ItemStack(item),1);
+				})
+				.build());
+		this.openComputerUpgrade = this.registerById(registry.item("opencomputer_upgrade", OCUpgrade::new)
+						.features(Features.OPEN_COMPUTER_UPGRADE)
+						.build());
 
 		registry.addBootstrapComponent((IPostInitComponent) r -> {
 			var items = AEApi.instance().definitions().items();
@@ -237,4 +278,24 @@ public class Items implements Definitions<IItemDefinition> {
 	public IItemDefinition storageCellFluid16384K() {
 		return this.storageCellFluid16384K;
 	}
+
+	public IItemDefinition storageCellGas256K() {
+		return this.storageCellGas256K;
+	}
+
+	public IItemDefinition storageCellGas1024K() {
+		return this.storageCellGas1024K;
+	}
+
+	public IItemDefinition storageCellGas4096K() {
+		return this.storageCellGas4096K;
+	}
+
+	public IItemDefinition storageCellGas16384K() {
+		return this.storageCellGas16384K;
+	}
+
+	public IItemDefinition universalWirelessTerminal() {return this.universalWirelessTerminal;}
+
+	public IItemDefinition openComputerUpgrade() {return this.openComputerUpgrade;}
 }

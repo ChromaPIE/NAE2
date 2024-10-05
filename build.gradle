@@ -447,6 +447,7 @@ repositories {
             }
         }
     }
+    maven { url 'https://jitpack.io' }
     mavenLocal() // Must be last for caching to work
 }
 

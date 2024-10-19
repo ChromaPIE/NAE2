@@ -15,7 +15,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build # Ensure your gradlew script is executable
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3.2.1
+        uses: actions/upload-artifact@v4
         with:
           name: NAE2
           path: build/libs/*.jar # Make sure this path matches the location of your build artifacts

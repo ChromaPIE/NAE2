@@ -8,6 +8,7 @@ import appeng.bootstrap.components.IInitComponent;
 import appeng.bootstrap.components.IPostInitComponent;
 import appeng.bootstrap.components.IRecipeRegistrationComponent;
 import appeng.core.features.ItemDefinition;
+import appeng.util.Platform;
 import co.neeve.nae2.Tags;
 import co.neeve.nae2.client.gui.PatternMultiToolButtonHandler;
 import co.neeve.nae2.common.features.Features;
@@ -227,7 +228,7 @@ public class Items implements Definitions<IItemDefinition> {
 				});
 			}
 
-			if (Features.DENSE_GAS_CELLS.isEnabled()) {
+			if (Features.DENSE_GAS_CELLS.isEnabled() && Platform.isModLoaded("mekeng")) {
 				mirrorCellUpgrades(new ItemStack(ItemAndBlocks.GAS_CELL_1k), new IItemDefinition[]{
 					this.storageCellGas256K,
 					this.storageCellGas1024K,

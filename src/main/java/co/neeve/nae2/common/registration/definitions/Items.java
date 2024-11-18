@@ -20,7 +20,6 @@ import co.neeve.nae2.common.items.cells.DenseGasCell;
 import co.neeve.nae2.common.items.cells.DenseItemCell;
 import co.neeve.nae2.common.items.cells.handlers.VoidCellHandler;
 import co.neeve.nae2.common.items.cells.vc.VoidFluidCell;
-import co.neeve.nae2.common.items.cells.vc.VoidGasCell;
 import co.neeve.nae2.common.items.cells.vc.VoidItemCell;
 import co.neeve.nae2.common.items.patternmultitool.ToolPatternMultiTool;
 import co.neeve.nae2.common.recipes.handlers.VoidConversionRecipe;
@@ -46,7 +45,6 @@ public class Items implements Definitions<IItemDefinition> {
 
 	private final IItemDefinition storageCellVoid;
 	private final IItemDefinition fluidStorageCellVoid;
-	private final IItemDefinition gasStorageCellVoid;
 	private final IItemDefinition storageCell256K;
 	private final IItemDefinition storageCell1024K;
 	private final IItemDefinition storageCell4096K;
@@ -90,15 +88,9 @@ public class Items implements Definitions<IItemDefinition> {
 				.features(Features.VOID_CELLS)
 				.build());
 
-		this.gasStorageCellVoid = this.registerById(
-			registry.item("gas_storage_cell_void", VoidGasCell::new)
-				.features(Features.VOID_CELLS, Features.DENSE_GAS_CELLS)
-				.build());
-
 		var voidCells = new Object2ObjectArrayMap<String, IItemDefinition>();
 		if (this.storageCellVoid.isEnabled()) voidCells.put("item", this.storageCellVoid);
 		if (this.fluidStorageCellVoid.isEnabled()) voidCells.put("fluid", this.fluidStorageCellVoid);
-		if (this.gasStorageCellVoid.isEnabled()) voidCells.put("gas", this.gasStorageCellVoid);
 
 		registry.addBootstrapComponent((IPostInitComponent) r -> {
 			if (!voidCells.isEmpty()) {
@@ -272,10 +264,6 @@ public class Items implements Definitions<IItemDefinition> {
 
 	public IItemDefinition fluidStorageCellVoid() {
 		return this.fluidStorageCellVoid;
-	}
-
-	public IItemDefinition gasStorageCellVoid() {
-		return this.gasStorageCellVoid;
 	}
 
 	public IItemDefinition virtualPattern() {

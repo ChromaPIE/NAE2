@@ -4,7 +4,6 @@ import appeng.api.AEApi;
 import appeng.util.Platform;
 import co.neeve.nae2.common.api.config.WirelessTerminalType;
 import com.glodblock.github.loader.FCItems;
-import com.mekeng.github.common.ItemAndBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,11 +34,6 @@ public class UniversalTerminalHelper {
         terminals.add(AEApi.instance().definitions().parts().patternTerminal().maybeStack(1).orElse(null));
         terminals.add(AEApi.instance().definitions().parts().fluidTerminal().maybeStack(1).orElse(null));
 
-        if (isMekEngLoaded) {
-            wirelessTerminals.add(new ItemStack(ItemAndBlocks.WIRELESS_GAS_TERMINAL));
-            terminals.add(new ItemStack(ItemAndBlocks.GAS_TERMINAL));
-        }
-
         if (isAE2FCLoaded) {
             wirelessTerminals.add(new ItemStack(FCItems.WIRELESS_FLUID_PATTERN_TERMINAL));
             terminals.add(new ItemStack(FCItems.PART_FLUID_PATTERN_TERMINAL));
@@ -59,11 +53,6 @@ public class UniversalTerminalHelper {
         ItemStack wirelessFluidTerminal = AEApi.instance().definitions().items().wirelessFluidTerminal().maybeStack(1).orElse(null);
         if (wirelessFluidTerminal != null && wirelessFluidTerminal.getItem() == item && wirelessFluidTerminal.getItemDamage() == itemDamage)
             return true;
-
-        if (isMekEngLoaded) {
-            ItemStack wirelessGasTerminal = new ItemStack(ItemAndBlocks.WIRELESS_GAS_TERMINAL);
-            if (wirelessGasTerminal.getItem() == item && wirelessGasTerminal.getItemDamage() == itemDamage) return true;
-        }
 
         if (isAE2FCLoaded) {
             ItemStack fluidPatternWirelessTerminal = new ItemStack(FCItems.WIRELESS_FLUID_PATTERN_TERMINAL);
@@ -93,11 +82,6 @@ public class UniversalTerminalHelper {
         ItemStack fluidTerminal = AEApi.instance().definitions().parts().fluidTerminal().maybeStack(1).orElse(null);
         if (fluidTerminal != null && fluidTerminal.getItem() == item && fluidTerminal.getItemDamage() == itemDamage)
             return true;
-
-        if (isMekEngLoaded) {
-            ItemStack gasTerminal = new ItemStack(ItemAndBlocks.GAS_TERMINAL);
-            if (gasTerminal.getItem() == item && gasTerminal.getItemDamage() == itemDamage) return true;
-        }
 
         if (isAE2FCLoaded) {
             ItemStack fluidPatternTerminal = new ItemStack(FCItems.PART_FLUID_PATTERN_TERMINAL);
@@ -175,19 +159,6 @@ public class UniversalTerminalHelper {
         ItemStack wirelessInterfaceTerminal = AEApi.instance().definitions().items().wirelessInterfaceTerminal().maybeStack(1).orElse(null);
         if (wirelessInterfaceTerminal != null && wirelessInterfaceTerminal.getItem() == item && wirelessInterfaceTerminal.getItemDamage() == itemDamage) {
             return WirelessTerminalType.INTERFACE;
-        }
-
-        //MekEng Integration
-        if (isMekEngLoaded) {
-            ItemStack gasTerminal = new ItemStack(ItemAndBlocks.GAS_TERMINAL);
-            if (gasTerminal.getItem() == item && gasTerminal.getItemDamage() == itemDamage) {
-                return WirelessTerminalType.GAS;
-            }
-
-            ItemStack wirelessGasTerminal = new ItemStack(ItemAndBlocks.WIRELESS_GAS_TERMINAL);
-            if (wirelessGasTerminal.getItem() == item && wirelessGasTerminal.getItemDamage() == itemDamage) {
-                return WirelessTerminalType.GAS;
-            }
         }
 
         if (isAE2FCLoaded) {

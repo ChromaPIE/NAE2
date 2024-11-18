@@ -27,7 +27,6 @@ import co.neeve.nae2.common.recipes.handlers.VoidConversionRecipe;
 import co.neeve.nae2.common.registration.registry.Registry;
 import co.neeve.nae2.common.registration.registry.interfaces.Definitions;
 import co.neeve.nae2.common.registration.registry.rendering.NoItemRendering;
-import com.mekeng.github.common.ItemAndBlocks;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.item.ItemStack;
@@ -225,16 +224,6 @@ public class Items implements Definitions<IItemDefinition> {
 					this.storageCellFluid4096K,
 					this.storageCellFluid16384K,
 					this.fluidStorageCellVoid
-				});
-			}
-
-			if (Features.DENSE_GAS_CELLS.isEnabled() && Platform.isModLoaded("mekeng")) {
-				mirrorCellUpgrades(new ItemStack(ItemAndBlocks.GAS_CELL_1k), new IItemDefinition[]{
-					this.storageCellGas256K,
-					this.storageCellGas1024K,
-					this.storageCellGas4096K,
-					this.storageCellGas16384K,
-					this.storageCellVoid
 				});
 			}
 		});

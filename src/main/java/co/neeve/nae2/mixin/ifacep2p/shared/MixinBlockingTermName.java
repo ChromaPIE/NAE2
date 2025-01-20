@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 /**
  * isBusy stuff.
@@ -63,29 +64,36 @@ public abstract class MixinBlockingTermName {
 		var tiles = tunnelTEs.get();
 
 		// There's a pending tunnel to be iterated. Iterate it instead.
-		if (tiles != null) {
-			// Pop one entity and feed it instead, supplying the output tunnel's facing value.
-			var pair = tiles.removeFirst();
-			if (tiles.isEmpty())
-				tunnelTEs.set(null);
+		if (tiles != null && !tiles.isEmpty()) {
+			try {
+				// Pop one entity and feed it instead, supplying the output tunnel's facing value.
+				var pair = tiles.removeFirst();
+				if (tiles.isEmpty())
+					tunnelTEs.set(null);
 
-			facingRef.set(pair.getLeft());
+				facingRef.set(pair.getLeft());
 
-			if (Platform.isModLoaded("ae2fc")) {
-				final IInterfaceHost interfaceHost;
-				if (this.getHost() instanceof IInterfaceHost iInterfaceHost) {
-					interfaceHost = iInterfaceHost;
-				} else if (this.getTile() instanceof IInterfaceHost iInterfaceHost) {
-					interfaceHost = iInterfaceHost;
-				} else {
-					interfaceHost = null;
+				if (Platform.isModLoaded("ae2fc")) {
+					final IInterfaceHost interfaceHost;
+					if (this.getHost() instanceof IInterfaceHost iInterfaceHost) {
+						interfaceHost = iInterfaceHost;
+					} else if (this.getTile() instanceof IInterfaceHost iInterfaceHost) {
+						interfaceHost = iInterfaceHost;
+					} else {
+						interfaceHost = null;
+					}
+
+					AE2FCInterfaceHelper.setEnumFacingOverride(this.nae2$originalFacing.getOpposite());
+					AE2FCInterfaceHelper.setInterfaceOverride(
+						interfaceHost != null ? interfaceHost.getTileEntity() : null);
 				}
-
-				AE2FCInterfaceHelper.setEnumFacingOverride(this.nae2$originalFacing.getOpposite());
-				AE2FCInterfaceHelper.setInterfaceOverride(
-					interfaceHost != null ? interfaceHost.getTileEntity() : null);
+				return pair.getRight();
+			} catch (NoSuchElementException e) {
+				tunnelTEs.set(null);
+				return null;
 			}
-			return pair.getRight();
+		} else if (tiles != null) {
+			tunnelTEs.set(null);
 		}
 
 		// Fetch entity using the original method. Get current facing.

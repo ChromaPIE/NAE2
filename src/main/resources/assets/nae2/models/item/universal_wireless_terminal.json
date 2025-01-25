@@ -1,6 +1,0 @@
-{
-    "parent": "item/generated",
-    "textures": {
-        "layer0": "nae2:item/universal_wireless_terminal"
-    }
-}

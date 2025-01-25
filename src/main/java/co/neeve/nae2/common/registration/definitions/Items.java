@@ -3,27 +3,29 @@ package co.neeve.nae2.common.registration.definitions;
 import appeng.api.AEApi;
 import appeng.api.config.Upgrades;
 import appeng.api.definitions.IItemDefinition;
+import appeng.api.features.IWirelessTermHandler;
+import appeng.bootstrap.components.IInitComponent;
 import appeng.bootstrap.components.IPostInitComponent;
 import appeng.bootstrap.components.IRecipeRegistrationComponent;
 import appeng.core.features.ItemDefinition;
+import appeng.util.Platform;
 import co.neeve.nae2.Tags;
 import co.neeve.nae2.client.gui.PatternMultiToolButtonHandler;
 import co.neeve.nae2.common.features.Features;
 import co.neeve.nae2.common.features.subfeatures.VoidCellFeatures;
 import co.neeve.nae2.common.items.VirtualPattern;
+import co.neeve.nae2.common.items.WirelessTerminalUniversal;
 import co.neeve.nae2.common.items.cells.DenseFluidCell;
 import co.neeve.nae2.common.items.cells.DenseGasCell;
 import co.neeve.nae2.common.items.cells.DenseItemCell;
 import co.neeve.nae2.common.items.cells.handlers.VoidCellHandler;
 import co.neeve.nae2.common.items.cells.vc.VoidFluidCell;
-import co.neeve.nae2.common.items.cells.vc.VoidGasCell;
 import co.neeve.nae2.common.items.cells.vc.VoidItemCell;
 import co.neeve.nae2.common.items.patternmultitool.ToolPatternMultiTool;
 import co.neeve.nae2.common.recipes.handlers.VoidConversionRecipe;
 import co.neeve.nae2.common.registration.registry.Registry;
 import co.neeve.nae2.common.registration.registry.interfaces.Definitions;
 import co.neeve.nae2.common.registration.registry.rendering.NoItemRendering;
-import com.mekeng.github.common.ItemAndBlocks;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.item.ItemStack;
@@ -43,7 +45,6 @@ public class Items implements Definitions<IItemDefinition> {
 
 	private final IItemDefinition storageCellVoid;
 	private final IItemDefinition fluidStorageCellVoid;
-	private final IItemDefinition gasStorageCellVoid;
 	private final IItemDefinition storageCell256K;
 	private final IItemDefinition storageCell1024K;
 	private final IItemDefinition storageCell4096K;
@@ -57,6 +58,7 @@ public class Items implements Definitions<IItemDefinition> {
 	private final IItemDefinition storageCellGas4096K;
 	private final IItemDefinition storageCellGas16384K;
 	private final IItemDefinition virtualPattern;
+	private final IItemDefinition universalWirelessTerminal;
 
 	public Items(Registry registry) {
 		this.virtualPattern = this.registerById(registry.item("virtual_pattern", VirtualPattern::new)
@@ -86,15 +88,9 @@ public class Items implements Definitions<IItemDefinition> {
 				.features(Features.VOID_CELLS)
 				.build());
 
-		this.gasStorageCellVoid = this.registerById(
-			registry.item("gas_storage_cell_void", VoidGasCell::new)
-				.features(Features.VOID_CELLS, Features.DENSE_GAS_CELLS)
-				.build());
-
 		var voidCells = new Object2ObjectArrayMap<String, IItemDefinition>();
 		if (this.storageCellVoid.isEnabled()) voidCells.put("item", this.storageCellVoid);
 		if (this.fluidStorageCellVoid.isEnabled()) voidCells.put("fluid", this.fluidStorageCellVoid);
-		if (this.gasStorageCellVoid.isEnabled()) voidCells.put("gas", this.gasStorageCellVoid);
 
 		registry.addBootstrapComponent((IPostInitComponent) r -> {
 			if (!voidCells.isEmpty()) {
@@ -168,8 +164,7 @@ public class Items implements Definitions<IItemDefinition> {
 			.features(Features.DENSE_FLUID_CELLS)
 			.build());
 
-		this.storageCellGas256K = this.registerById(registry.item("storage_cell_gas_256k", () ->
-				new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_256K,
+		this.storageCellGas256K = this.registerById(registry.item("storage_cell_gas_256k", () -> new DenseGasCell(Materials.MaterialType.CELL_GAS_PART_256K,
 					(int) Math.pow(2, 8)))
 			.features(Features.DENSE_GAS_CELLS)
 			.build());
@@ -192,6 +187,14 @@ public class Items implements Definitions<IItemDefinition> {
 			.features(Features.DENSE_GAS_CELLS)
 			.build());
 
+		this.universalWirelessTerminal = this.registerById(registry.item("universal_wireless_terminal", WirelessTerminalUniversal::new)
+				.features(Features.UNIVERSAL_TERMINAL)
+				.bootstrap((item) -> (IInitComponent) r -> {
+					AEApi.instance().registries().wireless().registerWirelessHandler((IWirelessTermHandler) item);
+					Upgrades.MAGNET.registerItem(new ItemStack(item),1);
+				})
+				.build());
+
 		registry.addBootstrapComponent((IPostInitComponent) r -> {
 			var items = AEApi.instance().definitions().items();
 			var cellDef = items.cell1k();
@@ -213,16 +216,6 @@ public class Items implements Definitions<IItemDefinition> {
 					this.storageCellFluid4096K,
 					this.storageCellFluid16384K,
 					this.fluidStorageCellVoid
-				});
-			}
-
-			if (Features.DENSE_GAS_CELLS.isEnabled()) {
-				mirrorCellUpgrades(new ItemStack(ItemAndBlocks.GAS_CELL_1k), new IItemDefinition[]{
-					this.storageCellGas256K,
-					this.storageCellGas1024K,
-					this.storageCellGas4096K,
-					this.storageCellGas16384K,
-					this.storageCellVoid
 				});
 			}
 		});
@@ -271,10 +264,6 @@ public class Items implements Definitions<IItemDefinition> {
 
 	public IItemDefinition fluidStorageCellVoid() {
 		return this.fluidStorageCellVoid;
-	}
-
-	public IItemDefinition gasStorageCellVoid() {
-		return this.gasStorageCellVoid;
 	}
 
 	public IItemDefinition virtualPattern() {
@@ -328,4 +317,6 @@ public class Items implements Definitions<IItemDefinition> {
 	public IItemDefinition storageCellGas16384K() {
 		return this.storageCellGas16384K;
 	}
+
+	public IItemDefinition universalWirelessTerminal() {return this.universalWirelessTerminal;}
 }

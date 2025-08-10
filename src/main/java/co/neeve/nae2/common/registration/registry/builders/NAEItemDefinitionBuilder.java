@@ -99,7 +99,7 @@ public class NAEItemDefinitionBuilder implements INAEItemBuilder {
 
 	@Override
 	public ItemDefinition build() {
-		if (this.features != null && Arrays.stream(this.features).noneMatch(IFeature::isEnabled)) {
+		if (this.features != null && !Arrays.stream(this.features).allMatch(IFeature::isEnabled)) {
 			return new ItemDefinition(this.registryName, null);
 		}
 

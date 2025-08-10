@@ -264,7 +264,7 @@ public class ContainerPatternMultiTool extends AEBaseContainer implements IAEApp
 				}
 			}
 
-			if (!dropList.isEmpty()) {
+			if (dropList.size() > 0) {
 				var tileEntity = this.iface.getTileEntity();
 				var world = tileEntity.getWorld();
 				var blockPos = tileEntity.getPos();
@@ -282,7 +282,7 @@ public class ContainerPatternMultiTool extends AEBaseContainer implements IAEApp
 
 			var itemA = srInv.getStackInSlot(0);
 			var itemB = srInv.getStackInSlot(1);
-			if (itemA.isEmpty()) return;
+			if (itemA.isEmpty() || itemB.isEmpty()) return;
 
 			var itemBData = ItemStackHelper.stackToNBT(itemB);
 			var crafting = new InventoryCrafting(new ContainerNull(), 3, 3);
@@ -310,7 +310,8 @@ public class ContainerPatternMultiTool extends AEBaseContainer implements IAEApp
 				if (!isCrafting) lists.add(tagOut);
 
 				var fluidStackIn = FluidUtil.getFluidContained(itemA);
-				var fluidReplacement = ae2fc && fluidStackIn != null;
+				var fluidStackOut = FluidUtil.getFluidContained(itemB);
+				var fluidReplacement = ae2fc && fluidStackIn != null && fluidStackOut != null;
 
 				for (var list : lists) {
 					var idx = 0;
@@ -328,10 +329,10 @@ public class ContainerPatternMultiTool extends AEBaseContainer implements IAEApp
 								list.set(idx, data);
 							} else continue;
 						} else if (fluidReplacement && stack.getItem() instanceof ItemFluidDrop) {
-							FluidStack fluidStack = FakeItemRegister.getStack(stack);
+							var fluidStack = FakeItemRegister.getStack(stack);
 
 							// This should never be a crafting pattern.
-							if (fluidStackIn.isFluidEqual(fluidStack)) {
+							if (fluidStackIn.isFluidEqual(((FluidStack) fluidStack))) {
 								result = ValidatonResult.OK;
 							}
 						}

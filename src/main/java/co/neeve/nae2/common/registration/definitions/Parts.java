@@ -36,6 +36,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -75,11 +76,9 @@ public class Parts implements Definitions<DamagedItemDefinition> {
 		this.p2pTunnelInterface.maybeStack(1)
 			.ifPresent((tunnelStack) -> registry.addBootstrapComponent((IInitComponent) (r) -> {
 				AEApi.instance().registries().gridCache()
-					.registerGridCache(InterfaceTunnelGridCache.class, InterfaceTunnelGridCache.class);
+					.registerGridCache(InterfaceTunnelGridCache.class, InterfaceTunnelGridCache::new);
 
-				var tunnelType = AEApi.instance().registries().p2pTunnel()
-					.registerTunnelType("NAE2_IFACE_P2P", tunnelStack);
-
+				var tunnelType = EnumHelper.addEnum(TunnelType.class, "NAE2_IFACE_P2P", new Class[]{ItemStack.class}, tunnelStack);
 
 				blocks.iface().maybeStack(1)
 					.ifPresent((stack) -> registerTunnelConversion(tunnelType, stack));

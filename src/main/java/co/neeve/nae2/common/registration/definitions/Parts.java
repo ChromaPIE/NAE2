@@ -76,7 +76,7 @@ public class Parts implements Definitions<DamagedItemDefinition> {
 		this.p2pTunnelInterface.maybeStack(1)
 			.ifPresent((tunnelStack) -> registry.addBootstrapComponent((IInitComponent) (r) -> {
 				AEApi.instance().registries().gridCache()
-					.registerGridCache(InterfaceTunnelGridCache.class, InterfaceTunnelGridCache::new);
+					.registerGridCache(InterfaceTunnelGridCache.class, InterfaceTunnelGridCache.class);
 
 				var tunnelType = EnumHelper.addEnum(TunnelType.class, "NAE2_IFACE_P2P", new Class[]{ItemStack.class}, tunnelStack);
 

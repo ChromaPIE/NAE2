@@ -30,6 +30,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
@@ -63,8 +64,7 @@ public class Parts implements Definitions<DamagedItemDefinition> {
 				AEApi.instance().registries().gridCache()
 					.registerGridCache(InterfaceTunnelGridCache.class, InterfaceTunnelGridCache.class);
 
-				var tunnelType = AEApi.instance().registries().p2pTunnel()
-					.registerTunnelType("NAE2_IFACE_P2P", tunnelStack);
+				var tunnelType = EnumHelper.addEnum(TunnelType.class, "NAE2_IFACE_P2P", new Class[]{ItemStack.class}, tunnelStack);
 
 				var definitions = Api.INSTANCE.definitions();
 

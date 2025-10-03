@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Set;
+import java.util.List;
 import java.util.WeakHashMap;
 
 @Mixin(value = DualityInterface.class, remap = false)
@@ -36,7 +36,7 @@ public abstract class MixinDualityInterface {
 	@Final
 	private UpgradeInventory upgrades;
 	@Shadow
-	private Set<ICraftingPatternDetails> craftingList;
+	private List<ICraftingPatternDetails> craftingList;
 
 	@Shadow
 	protected abstract void updateCraftingList();
